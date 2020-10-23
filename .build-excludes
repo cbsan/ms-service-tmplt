@@ -1,0 +1,14 @@
+*.sql
+dist
+build
+.build-exclude
+api/vendor
+node_modules
+docker-compose.yml
+docker-compose-build.yml
+Jenkinsfile
+Makefile
+.git
+.editorconfig
+.gitignore
+*.md

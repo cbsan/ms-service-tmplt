@@ -1,0 +1,33 @@
+############################
+# Build application
+############################
+FROM node:lts-alpine as build
+COPY . /home/node/app
+COPY ./tmp/.ssh /root/.ssh
+
+WORKDIR /home/node/app
+
+RUN apk update && apk upgrade \
+  && apk add --no-cache bash git openssh
+
+RUN npm config set unsafe-perm true \
+  && npm i -g yarn --force \
+  && yarn --production \
+  && yarn upgrade acorn --depth 20 \
+  && yarn build \
+  && ls \
+  && cp -r .env.production ./build/.env
+
+###########################
+FROM node:lts-alpine
+COPY --from=build /home/node/app/build /var/app
+COPY --from=build /home/node/app/node_modules /var/app/node_modules
+
+RUN npm config set unsafe-perm true \
+  && npm install pm2 -g --force
+
+WORKDIR /var/app
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "pm2 start --no-daemon ./main.js"]
